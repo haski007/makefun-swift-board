@@ -9,7 +9,6 @@ const SORTS = {
   pot: ['Biggest pot', (a, b) => Number(b.potUsd) - Number(a.potUsd)],
   entries: ['Most entries', (a, b) => b.submissionCount - a.submissionCount],
 };
-const RANK = { live: 0, soon: 1, judging: 2, done: 3 };
 
 export function build({ past }) {
   const refs = {
@@ -56,7 +55,7 @@ export function patch(page, params, first) {
   const past = params.past;
   page.repaint = () => patch(page, params, first);
   page.cursorOf = (cursor) => `${params.api}&cursor=${encodeURIComponent(cursor)}`;
-  page.apiGet = params.apiGet;
+  page.etagGet = params.etagGet;
   const pages = [first, ...page.more];
   const bounties = [...new Map(pages.flatMap((each) => each.items).map((bounty) => [bounty.slug, bounty])).values()];
   const live = bounties.filter((bounty) => stage(bounty) === 'live');
@@ -77,7 +76,7 @@ export function patch(page, params, first) {
     }
   }
   for (const button of refs.sorts.children) button.setAttribute('aria-pressed', button.value === page.sort);
-  const sorted = bounties.toSorted((a, b) => RANK[stage(a)] - RANK[stage(b)] || SORTS[page.sort][1](a, b));
+  const sorted = bounties.toSorted((a, b) => Object.keys(STAGES).indexOf(stage(a)) - Object.keys(STAGES).indexOf(stage(b)) || SORTS[page.sort][1](a, b));
   patchList(refs.list, sorted, (bounty) => bounty.slug, bountyRow);
   const cursor = pages.at(-1).next_cursor;
   refs.more.hidden = !cursor;
@@ -90,7 +89,7 @@ export async function loadMore(page) {
   const { more } = page.refs;
   more.disabled = true;
   try {
-    page.more.push(await page.apiGet(page.cursorOf(page.cursor)));
+    page.more.push(await page.etagGet(page.cursorOf(page.cursor)));
     page.repaint();
   } finally {
     more.disabled = false;
@@ -125,6 +124,7 @@ function bountyRow() {
     const fact = facts(bounty);
     setText(refs.tag, STAGES[fact.at]);
     refs.tag.className = `tag ${fact.at}`;
+    refs.tag.hidden = fact.at === 'live' || fact.at === 'done';
     setText(refs.title, bounty.title);
     refs.title.href = `#/bounty/${bounty.slug}`;
     setText(refs.kind, [bounty.category, bounty.sponsor?.name && `by ${bounty.sponsor.name}`].filter(Boolean).join(' · '));

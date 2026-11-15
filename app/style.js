@@ -16,6 +16,9 @@ p{margin:0 0 10px}
 .cash:empty{display:none}
 .clock{color:var(--clock);font-weight:900;font-variant-numeric:tabular-nums;white-space:nowrap}
 .clock.off{color:var(--mute)}
+.clock.calm{color:var(--ink)}
+.sync{white-space:nowrap;font-size:12px;font-weight:600;color:var(--mute)}
+.sync::before{content:'';display:inline-block;width:8px;height:8px;margin-right:6px;border-radius:50%;background:var(--cash)}
 .tag{padding:1px 7px;border:2px solid var(--ink);color:var(--ink);background:var(--card);font-size:11px}
 .tag.live{background:var(--ink);color:var(--paper)}
 .tag.judging{border-style:dashed}
@@ -35,8 +38,8 @@ button:hover,.more:hover,button[aria-pressed=true]{background:var(--ink);color:v
 .band{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:10px 28px;padding-bottom:14px}
 .band h1{font-size:clamp(30px,4.4vw,46px);margin:0}
 .band h1 .cash{display:inline-block;padding:0 .22em}
-.side{display:grid;gap:9px;justify-items:end;max-width:100%}
-.next{margin:0;font-size:15px;text-align:right}
+.side{display:grid;gap:9px;justify-items:start;max-width:100%}
+.next{margin:0;font-size:15px}
 .next a{font-weight:700}
 .bounty h1{font-size:clamp(30px,4.2vw,44px)}
 .bounty .lead{font-size:17px;margin-bottom:6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
@@ -105,6 +108,10 @@ input[type=search]{width:100%;max-width:340px;margin:18px 0 12px}
 li .prize:not(:empty){background:var(--cash);padding:0 .25em}
 aside .standings li{grid-template-columns:34px 28px minmax(0,1fr) auto minmax(64px,auto)}
 aside .entry{grid-column:3/-1;grid-row:2;margin-top:-3px;font-size:13px}
+aside .hd{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:0 12px;margin-top:18px;border-top:3px solid var(--ink)}
+aside .hd h2{margin:0;border:0}
+aside .hd .more{margin:0;padding:0;border:0;background:none;font-size:14px;text-decoration:underline}
+aside .hd .more:hover{background:none;color:var(--clock)}
 aside .standings li{padding:5px 0;gap:0 10px}
 aside .standings-head{grid-template-columns:34px 28px minmax(0,1fr) auto minmax(64px,auto);padding:8px 0 5px;border-bottom:1px solid var(--ink)}
 aside .standings{border-top:0}
@@ -119,6 +126,7 @@ aside h2+.note{margin-bottom:4px}
 .results,.payouts{margin:0;padding:0;list-style:none;border-top:3px solid var(--ink)}
 .results li{display:grid;grid-template-columns:62px minmax(0,1fr) auto;gap:14px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
 .place{padding:4px 0;font-size:22px;font-weight:900;text-align:center;font-variant-numeric:tabular-nums}
+.place.off{padding:6px 0;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}
 .results h3{margin:0;font-size:17px}
 .results .title{text-decoration:none}
 .results .title:hover,.row:hover .title{text-decoration:underline}
@@ -127,7 +135,9 @@ aside h2+.note{margin-bottom:4px}
 .took{display:grid;justify-items:end;gap:3px}
 .took .cash{font-size:20px}
 .took .score{font-size:12.5px;font-weight:600;color:var(--mute)}
-.payouts li{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:baseline;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}
+.payouts li{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line);font-size:14px}
+.payouts small{display:block;color:var(--mute);font-size:12.5px}
+.payouts span b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
 @media (max-width:900px){
 .cols{display:none}

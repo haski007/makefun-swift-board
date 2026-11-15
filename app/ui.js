@@ -93,13 +93,18 @@ export function timeLeft(ms) {
 // Points a countdown element at a time; the ticker below does the rest.
 export function countdown(node, iso) {
   if (node.dataset.until !== iso) node.dataset.until = iso;
-  setText(node, timeLeft(Date.parse(iso) - Date.now()));
+  const left = Date.parse(iso) - Date.now();
+  setText(node, timeLeft(left));
+  node.classList.toggle('calm', left > 864e5);
   return node;
 }
 
+const sync = document.querySelector('header').appendChild(h('small.sync'));
+
 function tickCountdowns() {
   const now = Date.now();
-  for (const node of document.querySelectorAll('[data-until]')) setText(node, timeLeft(Date.parse(node.dataset.until) - now));
+  for (const node of document.querySelectorAll('[data-until]')) countdown(node, node.dataset.until);
+  if (window.syncedAt) setText(sync, `Live · updated ${Math.round((now - window.syncedAt) / 1000)}s ago`);
 }
 setInterval(tickCountdowns, 1000);
 
@@ -175,4 +180,24 @@ export function figures() {
     setText(entries, fact.entries);
   };
   return node;
+}
+
+// One shape for the three row kinds the API gives: full entries, the compact rest and /live's standings.
+export function standing(entry, display, title, prize) {
+  return {
+    id: entry.submission_id,
+    rank: entry.rank,
+    handle: entry.handle,
+    title: entry.title,
+    image: entry.image,
+    house: entry.house || entry.baseline || entry.internal,
+    score: score(display, title),
+    prize: prize ? usd(prize) : '',
+  };
+}
+
+// place -> what it pays now, the base reward plus its share of the entry fees.
+export function prizeMap(bounty) {
+  const now = bounty?.rewardsNow?.length ? bounty.rewardsNow : Object.entries(bounty?.rewards || {}).map(([place, amount]) => ({ place: Number(place), amountUsd: amount }));
+  return new Map(now.map((reward) => [reward.place, reward.amountUsd]));
 }
