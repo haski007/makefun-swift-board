@@ -4,22 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>make.fun bounties</title>
-<style>
-:root{--paper:#f5f1e8;--ink:#15130f;--mute:#625c50;--line:#d6cfbe;--card:#fffdf6;--cash:#21d977;--clock:#cc3a00}
-*{box-sizing:border-box}
-body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.45 system-ui,sans-serif}
-a{color:inherit}
-header{display:flex;flex-wrap:wrap;align-items:center;gap:8px 20px;padding:10px max(16px,calc(50vw - 600px));border-bottom:4px solid var(--ink);font-weight:700}
-header>a{margin-right:auto;font-size:21px;font-weight:900;letter-spacing:-.03em;text-decoration:none}
-header mark{background:var(--cash);margin-left:5px;padding:0 6px}
-nav{display:flex;gap:18px}
-nav a{text-decoration:none;border-bottom:3px solid transparent}
-nav [aria-current]{border-color:var(--ink)}
-input{font:inherit;background:var(--card);border:2px solid var(--ink);padding:5px 10px;width:100%}
-form{flex:0 1 12em}
-@media(max-width:600px){header{gap:4px 16px}header>a{flex:1 0 100%}form{flex:1}}
-main{max-width:1232px;margin:0 auto;padding:20px 16px 64px;min-height:90vh}
-</style>
 </head>
 <body>
 <header>
@@ -27,7 +11,7 @@ main{max-width:1232px;margin:0 auto;padding:20px 16px 64px;min-height:90vh}
 <nav><a href="#/">Live board</a><a href="#/past">Finished</a></nav>
 <form role="search"><input name="q" placeholder="Profile: @handle" aria-label="Open a public profile by handle"></form>
 </header>
-<main id="view" aria-live="polite">Loading make.fun…</main>
-<script type="module" src="router.js"></script>
+<main id=view aria-live=polite>Loading…</main>
+<script type=module src=router.js></script>
 </body>
 </html>

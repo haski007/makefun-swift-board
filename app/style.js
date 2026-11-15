@@ -1,7 +1,18 @@
-// The stylesheet beyond index.html's few critical rules. It arrives with the first view (ui.js adopts it as a
-// constructed sheet), so it costs the first load nothing. One theme: warm paper, black ink, a green slab for money
-// and an orange clock.
 export const CSS = `
+:root{--paper:#f5f1e8;--ink:#15130f;--mute:#625c50;--line:#d6cfbe;--card:#fffdf6;--cash:#21d977;--clock:#cc3a00}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.45 system-ui,sans-serif}
+a{color:inherit}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:8px 20px;padding:10px max(16px,calc(50vw - 600px));border-bottom:4px solid var(--ink);font-weight:700}
+header>a{margin-right:auto;font-size:21px;font-weight:900;letter-spacing:-.03em;text-decoration:none}
+header mark{background:var(--cash);margin-left:5px;padding:0 6px}
+nav{display:flex;gap:18px}
+nav a{text-decoration:none;border-bottom:3px solid transparent}
+nav [aria-current]{border-color:var(--ink)}
+input{font:inherit;background:var(--card);border:2px solid var(--ink);padding:5px 10px;width:100%}
+form{flex:0 1 12em}
+@media(max-width:600px){header{gap:4px 16px}header>a{flex:1 0 100%}form{flex:1}}
+main{max-width:1232px;margin:0 auto;padding:20px 16px 64px;min-height:90vh}
 h1{font-size:clamp(32px,5.2vw,56px);line-height:1.03;letter-spacing:-.04em;font-weight:900;margin:4px 0 12px;text-wrap:balance}
 h2{font-size:21px;line-height:1.15;letter-spacing:-.02em;font-weight:800;margin:26px 0 10px;padding-top:9px;border-top:3px solid var(--ink)}
 h3{font-size:17px;line-height:1.25;margin:16px 0 6px}
@@ -38,7 +49,7 @@ button:hover,.more:hover,button[aria-pressed=true]{background:var(--ink);color:v
 .band{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:10px 28px;padding-bottom:14px}
 .band h1{font-size:clamp(30px,4.4vw,46px);margin:0}
 .band h1 .cash{display:inline-block;padding:0 .22em}
-.side{display:grid;gap:9px;justify-items:start;max-width:100%}
+.side{display:flex;flex-wrap:wrap;align-items:center;gap:8px 22px;max-width:100%}
 .next{margin:0;font-size:15px}
 .next a{font-weight:700}
 .bounty h1{font-size:clamp(30px,4.2vw,44px)}
@@ -139,12 +150,44 @@ aside h2+.note{margin-bottom:4px}
 .payouts small{display:block;color:var(--mute);font-size:12.5px}
 .payouts span b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
+.pager{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;margin:8px 0}
+.pager .where{flex:1;min-width:14em;font-weight:800;font-variant-numeric:tabular-nums}
+.pager button{padding:4px 12px}
+button:disabled{opacity:.35;cursor:default;background:var(--card);color:var(--ink)}
+.duo{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:32px;align-items:start}
+.duo .bounty h1{font-size:34px;margin:0 0 6px}
+.duo .bounty .crumbs{margin-bottom:8px}
+.duo .bounty .lead{font-size:16px;-webkit-line-clamp:1;margin-bottom:0}
+.duo .figures{grid-template-columns:repeat(2,minmax(0,1fr));margin:8px 0 0}
+.duo .figures>div{padding:6px 14px 7px}
+.duo .figures>div:nth-child(odd){border-left:0}
+.duo .figures>div:nth-child(n+3){border-top:1px solid var(--line)}
+.duo .bounty .figures b{font-size:28px}
+.duo .columns{display:block}
+.duo .columns aside,.duo .columns>div>:nth-child(n+6){display:none}
+.duo .columns>*>h2:first-child{margin-top:14px}
+.duo h2{font-size:19px;margin:14px 0 6px}
+.duo .rewards li{padding:3px 0}
+.duo .dates{display:grid;grid-template-columns:1fr 1fr;gap:0 20px}
+.duo .dates>div{grid-template-columns:minmax(0,1fr);gap:0;padding:3px 0 4px}
+.duo .dates>div:first-child{display:none}
+.duo .dates>div:nth-child(n+4){grid-column:1/-1;grid-template-columns:170px minmax(0,1fr);gap:0 10px;align-items:baseline}
+.duo .dates>div:last-child dd{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:14px;line-height:1.3}
+.duo .dates dt{padding:0;font-size:11px}
+.duo .sum{display:none}
+.duo .dates dd{font-size:15px;font-weight:600}
+.duo .bounty .crumbs,.duo .bounty .kicker>span:last-child{display:none}
+.duo .sum{font-size:14px;margin-bottom:6px}
+.duo .leaderboard>:is(.crumbs,h1,.lead,.figures){display:none}
+.duo .leaderboard>.kicker{margin:0;padding-top:9px;border-top:3px solid var(--ink);font-size:21px;font-weight:900;letter-spacing:-.02em;text-transform:none;color:var(--ink)}
+.duo input[type=search]{margin:6px 0 0;max-width:none;padding:4px 10px}
+.duo .standings li{padding:5px 0}
+
 @media (max-width:900px){
 .cols{display:none}
 .row{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px 12px;padding:14px 0}
 .what{grid-column:1/-1}
 .c::before{content:attr(data-l);font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
-.band,.side{justify-items:start}
 .next{text-align:left}
 .columns{grid-template-columns:minmax(0,1fr)}
 .profile .figures{grid-template-columns:repeat(3,minmax(0,1fr))}
@@ -153,7 +196,13 @@ aside h2+.note{margin-bottom:4px}
 }
 @media (max-width:600px){
 .lead{font-size:17px}
-.figures,.profile .figures{grid-template-columns:repeat(2,minmax(0,1fr))}
+.figures{grid-template-columns:repeat(2,minmax(0,1fr))}
+.profile .figures{grid-template-columns:repeat(3,minmax(0,1fr))}
+.profile .figures>div{padding:8px 10px}
+.profile .figures b{font-size:23px}
+.profile .figures small{font-size:11.5px}
+.profile .figures dt{font-size:10px;letter-spacing:.06em}
+.sync{display:none}
 .row{grid-template-columns:repeat(2,minmax(0,1fr))}
 .row{align-items:start}
 .row .title{white-space:normal}
@@ -163,14 +212,20 @@ aside h2+.note{margin-bottom:4px}
 .rewards li{grid-template-columns:96px minmax(0,auto) 1fr}
 .figures>div:nth-child(odd){border-left:0}
 .figures>div:nth-child(n+3){border-top:1px solid var(--line)}
-.profile .figures>div:nth-child(4){border-left:1px solid var(--line)}
+.profile .figures>div:nth-child(odd){border-left:1px solid var(--line)}
+.profile .figures>div:nth-child(3n+1){border-left:0}
+.profile .figures>div:nth-child(3){border-top:0}
 .standings li,.standings-head{grid-template-columns:34px 28px minmax(0,1fr) auto minmax(64px,auto)}
 .standings-head .entry{display:none}
 .standings .entry{grid-column:3/-1;grid-row:2;margin-top:-4px}
 .id{align-items:flex-start;gap:14px}
 .id .avatar{width:64px;height:64px;font-size:28px}
-.results li{grid-template-columns:48px minmax(0,1fr)}
-.took{grid-column:2;justify-items:start}
+.results li{grid-template-columns:48px minmax(0,1fr) auto;gap:10px;padding:8px 0}
+.place{font-size:19px}
+.results h3{font-size:16px;line-height:1.2}
+.results .entry{display:none}
+.kicker{font-size:11px}
+.crumbs{margin-bottom:8px}
 .dates>div{grid-template-columns:minmax(0,1fr);gap:0}
 }
 `;

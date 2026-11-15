@@ -1,12 +1,11 @@
-// First load: one page function per surface, the ETag cache and the hash router. Each view is a module loaded by a literal dynamic import.
 function boardPage({ past }) {
   return [import('./board.js'), `/competitions?status=${past ? 'resolved' : 'open'}&activity=times&limit=24`];
 }
 function bountyPage({ slug }) {
   return [import('./bounty.js'), `/competitions/${slug}?submissions=summary`, `/competitions/${slug}/live`];
 }
-function leaderboardPage({ slug }) {
-  return [import('./leaderboard.js'), `/competitions/${slug}/leaderboard?rows=first`, `/competitions/${slug}?submissions=summary`];
+function leaderboardPage({ slug, wide }) {
+  return [wide ? import('./duo.js') : import('./leaderboard.js'), `/competitions/${slug}/leaderboard?rows=first`, `/competitions/${slug}?submissions=summary`];
 }
 function profilePage({ handle }) {
   return [import('./profile.js'), `/profiles/${handle}`];
@@ -18,13 +17,11 @@ const ROUTES = [
   [/^#\/bounty\/(?<slug>[\w.-]+)\/leaderboard$/, leaderboardPage],
   [/^#\/u\/(?<handle>[^/]+)$/, profilePage],
 ];
-// path -> { etag, data, minute }, and path -> the one request concurrent callers share
 const etagCache = new Map();
 const inFlight = new Map();
 let turn = 0;
 
-// One GET per path at a time; the browser revalidates with If-None-Match itself, and a 304 keeps the parsed answer.
-function revalidate(path) {
+function revalidateByEtag(path) {
   if (!inFlight.has(path)) {
     const held = etagCache.get(path);
     inFlight.set(
@@ -43,16 +40,13 @@ function revalidate(path) {
   return inFlight.get(path);
 }
 
-// ETags turn with the minute: an answer from this minute costs no request; an older one shows at once while it
-// revalidates, and the open view is patched only if the answer changed.
 export function etagGet(path) {
   const held = etagCache.get(path);
-  if (!held) return revalidate(path);
-  if (held.minute !== (Date.now() / 6e4) | 0) revalidate(path).then((data) => data === held.data || refresh(), () => {});
+  if (!held) return revalidateByEtag(path);
+  if (held.minute !== (Date.now() / 6e4) | 0) revalidateByEtag(path).then((data) => data === held.data || refresh(), () => {});
   return Promise.resolve(held.data);
 }
 
-// A route's page is built once; the same route again (refresh, sort, next page) patches it in place.
 function buildOnceThenPatch(view, key, module, params, answers) {
   if (view.dataset.key !== key) {
     view.dataset.key = key;
@@ -65,16 +59,18 @@ function buildOnceThenPatch(view, key, module, params, answers) {
 async function refresh() {
   const mine = ++turn;
   const hash = (decodeURI(location.hash) || '#/').replace(/([^#])\/+$/, '$1');
+  const wide = matchMedia('(min-width:1100px)').matches;
+  const key = hash + (wide && /^#\/bounty\/[^/]+\/leaderboard$/.test(hash) ? '+duo' : '');
   const view = document.getElementById('view');
-  if (view.dataset.key !== hash) window.__shotReady = false;
+  if (view.dataset.key !== key) window.__shotReady = false;
   try {
     const [pattern, page] = ROUTES.find(([pattern]) => pattern.test(hash)) || [];
     if (!page) throw Error(`No page at ${hash}`);
-    const params = { ...pattern.exec(hash).groups, etagGet };
+    const params = { ...pattern.exec(hash).groups, etagGet, wide };
     const [load, first, ...rest] = page(params);
     params.api = first;
     const [module, ...answers] = await Promise.all([load, etagGet(first), ...rest.map((path) => etagGet(path).catch(() => null))]);
-    if (mine === turn) buildOnceThenPatch(view, hash, module, params, answers);
+    if (mine === turn) buildOnceThenPatch(view, key, module, params, answers);
   } catch (error) {
     if (mine !== turn) return;
     view.dataset.key = '';
@@ -86,6 +82,7 @@ async function refresh() {
   window.syncedAt = Date.now();
 }
 
+matchMedia('(min-width:1100px)').onchange = () => refresh();
 addEventListener('hashchange', refresh);
 addEventListener('visibilitychange', () => document.hidden || refresh());
 setInterval(() => document.hidden || refresh(), 6e4);

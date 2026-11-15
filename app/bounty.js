@@ -67,8 +67,8 @@ export function patch({ refs }, params, bounty, live) {
   setText(refs.title, bounty.title);
   setText(refs.summary, bounty.summary || '');
   refs.figures.patch(bounty);
-  patchRewardsTable(refs, bounty);
-  patchDates(refs.dates, bounty, live);
+  parts.rewards(refs, bounty);
+  parts.dates(refs.dates, bounty, live);
   setText(refs.scoring, bounty.resolution?.summary || '');
   setText(refs.metric, bounty.resolution?.metric ? `Ranked by ${bounty.resolution.metric.name}, ${bounty.resolution.metric.better} is better.` : '');
   if (refs.description.source !== bounty.description) refs.description.replaceChildren(parts.prose((refs.description.source = bounty.description) || ''));
@@ -89,35 +89,33 @@ export function patch({ refs }, params, bounty, live) {
   setText(refs.all, top.length ? `Full leaderboard, all ${count(standings.total)} →` : 'Open the leaderboard');
 }
 
-function patchRewardsTable(refs, bounty) {
-  const fees = Number(bounty.entryFeesUsd) || 0;
-  const places = bounty.rewardsNow?.length
-    ? bounty.rewardsNow
-    : Object.entries(bounty.rewards || {}).map(([place, amount]) => ({ place: Number(place), amountUsd: amount, baseUsd: amount, feeShareUsd: 0 }));
-  setText(
-    refs.potNote,
-    fees
-      ? `Shared by the top ${places.length}: ${usd(bounty.rewardAmount)} reward + ${usd(fees)} from ${count(bounty.entryFeePayers)} entry fees.`
-      : `Shared by the top ${places.length}: the reward alone, no entry fee adds to it.`,
-  );
-  patchList(refs.rewards, parts.tiers(places), (tier) => tier.place, parts.rewardCell);
-}
-
-function patchDates(list, bounty, live) {
-  const phases = (bounty.phases || []).map((phase) => [`Phase: ${phase.title}`, `${day(phase.startsAt)} to ${day(phase.endsAt)}`]);
-  const rows = [
-    ['Status', STAGES[stage(bounty)]],
-    ['Opened', day(bounty.opensAt || bounty.publishedAt)],
-    ['Deadline', day(bounty.deadline)],
-    ...phases,
-    bounty.resolvedAt && ['Resolved', day(bounty.resolvedAt)],
-    bounty.resolution?.announce && ['Results', bounty.resolution.announce],
-  ].filter(Boolean);
-  patchList(list, rows, (row) => row[0], parts.dateRow);
-}
-
-// The small pieces of the page: the rewards tiers, a reward line, a date line and the API's markdown.
+// The small pieces of the page: the rewards and dates patches, the tiers, a reward line, a date line and the API's markdown.
 const parts = {
+  rewards(refs, bounty) {
+    const fees = Number(bounty.entryFeesUsd) || 0;
+    const places = bounty.rewardsNow?.length
+      ? bounty.rewardsNow
+      : Object.entries(bounty.rewards || {}).map(([place, amount]) => ({ place: Number(place), amountUsd: amount, baseUsd: amount, feeShareUsd: 0 }));
+    setText(
+      refs.potNote,
+      fees
+        ? `Shared by the top ${places.length}: ${usd(bounty.rewardAmount)} reward + ${usd(fees)} from ${count(bounty.entryFeePayers)} entry fees.`
+        : `Shared by the top ${places.length}: the reward alone, no entry fee adds to it.`,
+    );
+    patchList(refs.rewards, parts.tiers(places), (tier) => tier.place, parts.rewardCell);
+  },
+  dates(list, bounty, live) {
+    const phases = (bounty.phases || []).map((phase) => [`Phase: ${phase.title}`, `${day(phase.startsAt)} to ${day(phase.endsAt)}`]);
+    const rows = [
+      ['Status', STAGES[stage(bounty)]],
+      ['Opened', day(bounty.opensAt || bounty.publishedAt)],
+      ['Deadline', day(bounty.deadline)],
+      ...phases,
+      bounty.resolvedAt && ['Resolved', day(bounty.resolvedAt)],
+      bounty.resolution?.announce && ['Results', bounty.resolution.announce],
+    ].filter(Boolean);
+    patchList(list, rows, (row) => row[0], parts.dateRow);
+  },
   // The places that pay the same are one line of the rewards table: 1st, 2nd, 3rd, 4th to 10th, 11th to 20th.
   tiers(places) {
     const out = [];

@@ -41,7 +41,7 @@ export function build() {
       tile('Entered', refs.entered, 'bounties'),
       tile('Best place', refs.best, 'so far'),
     ),
-    h('div.columns', h('div', h('h2', 'Results'), refs.results, refs.more, refs.shown), h('aside', refs.paid)),
+    h('div.columns', h('div', h('h2', 'Results, biggest prize first'), refs.results, refs.more, refs.shown), h('aside', refs.paid)),
   );
   page.refs = refs;
   page.rows = PAGE_RESULTS;
@@ -110,7 +110,7 @@ function byBounty(solutions) {
     const placed = group.entries.filter((entry) => entry.placement > 0);
     group.best = placed.toSorted((a, b) => a.placement - b.placement)[0] || group.entries[0];
   }
-  return [...groups.values()];
+  return [...groups.values()].toSorted((a, b) => b.prize - a.prize);
 }
 
 function resultRow() {

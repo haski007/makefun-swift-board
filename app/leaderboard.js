@@ -1,40 +1,56 @@
-// Surface 3, a bounty's leaderboard (#/bounty/:slug/leaderboard): every ranked entry with its score and the reward
-// its place pays at the live pot. A board can hold thousands of rows, so they are shown a page at a time and the
-// rows on the page are keyed and patched in place.
-import { h, patchList, setText, usd, count, score, avatar, figures, standing, prizeMap } from './ui.js';
+import { h, patchList, setText, count, avatar, figures, standing, prizeMap } from './ui.js';
+
+const ROWS_PER_PAGE = 50;
+
+export function showPage(page, at) {
+  page.at = at;
+  page.repaint();
+}
 
 export function build({ slug }) {
+  const pager = () => {
+    const prev = h('button', { type: 'button' }, '‹ Prev');
+    const next = h('button', { type: 'button' }, 'Next ›');
+    const text = h('span.where');
+    const node = h('div.pager', { role: 'group', 'aria-label': 'Leaderboard pages' }, prev, text, next);
+    prev.addEventListener('click', () => showPage(page, page.at - 1));
+    next.addEventListener('click', () => showPage(page, page.at + 1));
+    node.patch = (at, pages, from, to, total) => {
+      setText(text, total ? `Rows ${count(from)}–${count(to)} of ${count(total)} · Page ${at + 1} of ${count(pages)}` : 'No rows');
+      prev.disabled = at <= 0;
+      next.disabled = at >= pages - 1;
+      node.hidden = pages < 2;
+    };
+    return node;
+  };
   const refs = {
     bounty: h('a', { href: `#/bounty/${slug}` }),
     lead: h('span'),
     held: h('span'),
+    ranked: h('span'),
     figures: figures(),
     filter: h('input', { type: 'search', placeholder: 'Filter by handle or entry', 'aria-label': 'Filter the leaderboard by handle or entry title' }),
     scoreTitle: h('span.score'),
     list: h('ol.standings'),
-    more: h('button.more', { type: 'button' }),
-    shown: h('p.note'),
+    top: pager(),
+    bottom: pager(),
   };
-  refs.filter.addEventListener('input', () => {
-    page.rows = PAGE_ROWS;
-    page.repaint();
-  });
-  refs.more.addEventListener('click', () => showMore(page));
+  refs.filter.addEventListener('input', () => showPage(page, 0));
   const page = h(
     'section.leaderboard',
     h('p.crumbs', h('a', { href: '#/' }, 'Bounty board'), ' / ', refs.bounty),
-    h('p.kicker', 'Leaderboard · live from make.fun/api'),
+    h('p.kicker', refs.ranked),
     h('h1', 'Leaderboard'),
     h('p.lead', refs.lead, ' ', refs.held),
     refs.figures,
     refs.filter,
+    refs.top,
     h('div.standings-head', h('span', '#'), h('span', 'Entrant'), h('span.entry', 'Entry'), refs.scoreTitle, h('span.prize', 'Reward now')),
     refs.list,
-    refs.more,
-    refs.shown,
+    refs.bottom,
   );
   page.refs = refs;
-  page.rows = PAGE_ROWS;
+  page.at = 0;
   return page;
 }
 
@@ -49,19 +65,22 @@ export function patch(page, { slug }, board, bounty) {
   ];
   const wanted = refs.filter.value.trim().toLowerCase();
   const found = wanted ? rows.filter((row) => `${row.handle} ${row.title}`.toLowerCase().includes(wanted)) : rows;
+  const pages = Math.max(1, Math.ceil(found.length / ROWS_PER_PAGE));
+  page.at = Math.min(Math.max(page.at, 0), pages - 1);
+  const from = page.at * ROWS_PER_PAGE;
+  const shown = found.slice(from, from + ROWS_PER_PAGE);
+  const phase = board.phase?.title || 'current phase';
   setText(refs.bounty, bounty?.title || board.competition?.title || slug);
-  setText(refs.lead, `${count(rows.length)} ranked entries in the ${board.phase?.title || 'current'} phase, best first by ${title}.`);
+  setText(refs.ranked, `${count(rows.length)} ranked · ${phase}`);
+  setText(refs.lead, `${count(rows.length)} ranked entries in the ${phase}, best first by ${title}.`);
   setText(refs.held, board.phase?.placements_held ? 'Places are provisional until the results are published.' : rows.length ? 'These places are final.' : 'No ranked entries yet.');
   setText(refs.scoreTitle, title);
   refs.figures.hidden = !bounty;
   if (bounty) refs.figures.patch(bounty);
-  patchStandings(refs.list, found.slice(0, page.rows));
-  refs.more.hidden = found.length <= page.rows;
-  setText(refs.more, `Show ${count(Math.min(PAGE_ROWS, found.length - page.rows))} more`);
-  setText(refs.shown, `Showing ${count(Math.min(page.rows, found.length))} of ${count(found.length)}${wanted ? ' matching' : ''} entries.`);
+  patchStandings(refs.list, shown);
+  for (const pager of [refs.top, refs.bottom]) pager.patch(page.at, pages, from + 1, from + shown.length, found.length);
 }
 
-// The rows of a leaderboard, in place: a row that is already shown is patched, not rebuilt.
 export function patchStandings(list, rows) {
   function standingRow(row) {
     const refs = {
@@ -86,12 +105,3 @@ export function patchStandings(list, rows) {
   }
   patchList(list, rows, (row) => row.id, standingRow);
 }
-
-const PAGE_ROWS = 50;
-
-// The next screenful of a long board: the rows are already held, so this is a patch and no request.
-export function showMore(page) {
-  page.rows += PAGE_ROWS;
-  page.repaint();
-}
-

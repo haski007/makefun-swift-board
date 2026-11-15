@@ -3,13 +3,6 @@
 // place on a refresh, a sort and "Load more", and the clocks tick from ui.js's single timer.
 import { h, patchList, setText, usd, count, stage, STAGES, countdown, avatar, facts, setClock } from './ui.js';
 
-const SORTS = {
-  soon: ['Ending soon', (a, b) => Date.parse(a.deadline) - Date.parse(b.deadline)],
-  late: ['Latest', (a, b) => Date.parse(b.deadline) - Date.parse(a.deadline)],
-  pot: ['Biggest pot', (a, b) => Number(b.potUsd) - Number(a.potUsd)],
-  entries: ['Most entries', (a, b) => b.submissionCount - a.submissionCount],
-};
-
 export function build({ past }) {
   const refs = {
     headline: h('span'),
@@ -46,7 +39,7 @@ export function build({ past }) {
     });
     refs.sorts.append(button);
   }
-  refs.more.addEventListener('click', () => loadMore(page));
+  refs.more.addEventListener('click', () => loadNextPageByCursor(page));
   return page;
 }
 
@@ -84,8 +77,15 @@ export function patch(page, params, first) {
   setText(refs.shown, `${count(bounties.length)} ${past ? 'finished' : 'open'} bounties shown${cursor ? ', more to load' : ', all of them'}.`);
 }
 
+const SORTS = {
+  soon: ['Ending soon', (a, b) => Date.parse(a.deadline) - Date.parse(b.deadline)],
+  late: ['Latest', (a, b) => Date.parse(b.deadline) - Date.parse(a.deadline)],
+  pot: ['Biggest pot', (a, b) => Number(b.potUsd) - Number(a.potUsd)],
+  entries: ['Most entries', (a, b) => b.submissionCount - a.submissionCount],
+};
+
 // The next page of the board: one more cached request, then the same patch with its rows added.
-export async function loadMore(page) {
+export async function loadNextPageByCursor(page) {
   const { more } = page.refs;
   more.disabled = true;
   try {
