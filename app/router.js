@@ -17,8 +17,7 @@ const ROUTES = [
   [/^#\/bounty\/(?<slug>[\w.-]+)\/leaderboard$/, leaderboardPage],
   [/^#\/u\/(?<handle>[^/]+)$/, profilePage],
 ];
-const etagCache = new Map();
-const inFlight = new Map();
+const etagCache = new Map(), inFlight = new Map();
 let turn = 0;
 
 function revalidateByEtag(path) {
@@ -43,7 +42,7 @@ function revalidateByEtag(path) {
 export function etagGet(path) {
   const held = etagCache.get(path);
   if (!held) return revalidateByEtag(path);
-  if (held.minute !== (Date.now() / 6e4) | 0) revalidateByEtag(path).then((data) => data === held.data || refresh(), () => {});
+  if (held.minute !== ((Date.now() / 6e4) | 0)) revalidateByEtag(path).then((data) => data === held.data || refresh(), () => {});
   return Promise.resolve(held.data);
 }
 
@@ -62,12 +61,15 @@ async function refresh() {
   const wide = matchMedia('(min-width:1100px)').matches;
   const key = hash + (wide && /^#\/bounty\/[^/]+\/leaderboard$/.test(hash) ? '+duo' : '');
   const view = document.getElementById('view');
+  view.ariaLive = 'polite';
   if (view.dataset.key !== key) window.__shotReady = false;
   try {
     const [pattern, page] = ROUTES.find(([pattern]) => pattern.test(hash)) || [];
     if (!page) throw Error(`No page at ${hash}`);
     const params = { ...pattern.exec(hash).groups, etagGet, wide };
     const [load, first, ...rest] = page(params);
+    import('./ui.js');
+    import('./style.js');
     params.api = first;
     const [module, ...answers] = await Promise.all([load, etagGet(first), ...rest.map((path) => etagGet(path).catch(() => null))]);
     if (mine === turn) buildOnceThenPatch(view, key, module, params, answers);

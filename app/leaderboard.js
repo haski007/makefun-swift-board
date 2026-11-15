@@ -13,8 +13,12 @@ export function build({ slug }) {
     const next = h('button', { type: 'button' }, 'Next ›');
     const text = h('span.where');
     const node = h('div.pager', { role: 'group', 'aria-label': 'Leaderboard pages' }, prev, text, next);
-    prev.addEventListener('click', () => showPage(page, page.at - 1));
-    next.addEventListener('click', () => showPage(page, page.at + 1));
+    const go = (step) => {
+      showPage(page, page.at + step);
+      if (node !== page.refs.top) page.refs.top.scrollIntoView({ block: 'nearest' });
+    };
+    prev.addEventListener('click', () => go(-1));
+    next.addEventListener('click', () => go(1));
     node.patch = (at, pages, from, to, total) => {
       setText(text, total ? `Rows ${count(from)}–${count(to)} of ${count(total)} · Page ${at + 1} of ${count(pages)}` : 'No rows');
       prev.disabled = at <= 0;
@@ -32,6 +36,7 @@ export function build({ slug }) {
     filter: h('input', { type: 'search', placeholder: 'Filter by handle or entry', 'aria-label': 'Filter the leaderboard by handle or entry title' }),
     scoreTitle: h('span.score'),
     list: h('ol.standings'),
+    none: h('p.note'),
     top: pager(),
     bottom: pager(),
   };
@@ -47,6 +52,7 @@ export function build({ slug }) {
     refs.top,
     h('div.standings-head', h('span', '#'), h('span', 'Entrant'), h('span.entry', 'Entry'), refs.scoreTitle, h('span.prize', 'Reward now')),
     refs.list,
+    refs.none,
     refs.bottom,
   );
   page.refs = refs;
@@ -75,6 +81,7 @@ export function patch(page, { slug }, board, bounty) {
   setText(refs.lead, `${count(rows.length)} ranked entries in the ${phase}, best first by ${title}.`);
   setText(refs.held, board.phase?.placements_held ? 'Places are provisional until the results are published.' : rows.length ? 'These places are final.' : 'No ranked entries yet.');
   setText(refs.scoreTitle, title);
+  setText(refs.none, found.length || !rows.length ? '' : `No entrant matches "${wanted}".`);
   refs.figures.hidden = !bounty;
   if (bounty) refs.figures.patch(bounty);
   patchStandings(refs.list, shown);

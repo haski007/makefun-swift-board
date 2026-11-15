@@ -2,6 +2,14 @@
 // and score, and its payouts. One request; the results are shown a page at a time and patched in place.
 import { h, patchList, setText, usd, count, ordinal, day, score, avatar } from './ui.js';
 
+const PAGE_RESULTS = 8;
+
+// A profile's results arrive whole; they are shown a page at a time, and the next page is a patch.
+export function showMore(page) {
+  page.rows += PAGE_RESULTS;
+  page.repaint();
+}
+
 export function build() {
   const refs = {
     who: h('span.me'),
@@ -89,14 +97,6 @@ function patchResults(list, results) {
   patchList(list, results, (result) => result.competition.slug, resultRow);
 }
 
-const PAGE_RESULTS = 8;
-
-// A profile's results arrive whole; they are shown a page at a time, and the next page is a patch.
-export function showMore(page) {
-  page.rows += PAGE_RESULTS;
-  page.repaint();
-}
-
 // One line per bounty the account entered: its best place, how many entries it made, the prize and its best score.
 function byBounty(solutions) {
   const groups = new Map();
@@ -109,9 +109,12 @@ function byBounty(solutions) {
   for (const group of groups.values()) {
     const placed = group.entries.filter((entry) => entry.placement > 0);
     group.best = placed.toSorted((a, b) => a.placement - b.placement)[0] || group.entries[0];
+    group.last = Math.max(...group.entries.map((entry) => Date.parse(entry.entered_at) || 0));
   }
-  return [...groups.values()].toSorted((a, b) => b.prize - a.prize);
+  return [...groups.values()].toSorted((a, b) => b.prize - a.prize || (a.best.placement || 1e9) - (b.best.placement || 1e9) || b.last - a.last);
 }
+
+const SHORT = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' });
 
 function resultRow() {
   const refs = {
@@ -136,7 +139,7 @@ function resultRow() {
     const column = best.score?.column;
     setText(refs.score, best.score ? `${(column?.title || 'Score').replace(/ \(.*\)/, '')} ${score(best.score.display, column?.title)}` : '');
     const n = group.entries.length;
-    setText(refs.when, `${competition.category || 'Bounty'} · ${n} ${n > 1 ? 'entries' : 'entry'} · last ${day(group.entries[0].entered_at)}${open ? '' : ''}`);
+    setText(refs.when, `${competition.category || 'Bounty'} · ${n} ${n > 1 ? 'entries' : 'entry'} · ${SHORT.format(group.last)}`);
   };
   return node;
 }

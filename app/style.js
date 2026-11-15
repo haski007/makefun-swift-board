@@ -11,7 +11,7 @@ nav a{text-decoration:none;border-bottom:3px solid transparent}
 nav [aria-current]{border-color:var(--ink)}
 input{font:inherit;background:var(--card);border:2px solid var(--ink);padding:5px 10px;width:100%}
 form{flex:0 1 12em}
-@media(max-width:600px){header{gap:4px 16px}header>a{flex:1 0 100%}form{flex:1}}
+@media(max-width:600px){header{gap:4px 16px}header>a{flex:0 0 auto;margin-right:0;font-size:19px}nav{gap:12px;margin-left:auto}form{flex:1 0 100%}}
 main{max-width:1232px;margin:0 auto;padding:20px 16px 64px;min-height:90vh}
 h1{font-size:clamp(32px,5.2vw,56px);line-height:1.03;letter-spacing:-.04em;font-weight:900;margin:4px 0 12px;text-wrap:balance}
 h2{font-size:21px;line-height:1.15;letter-spacing:-.02em;font-weight:800;margin:26px 0 10px;padding-top:9px;border-top:3px solid var(--ink)}
@@ -47,9 +47,10 @@ button:hover,.more:hover,button[aria-pressed=true]{background:var(--ink);color:v
 .figures small{display:block;margin-top:4px;font-size:12.5px;line-height:1.25;color:var(--mute)}
 
 .band{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:10px 28px;padding-bottom:14px}
-.band h1{font-size:clamp(30px,4.4vw,46px);margin:0}
+.band h1{font-size:clamp(28px,3.4vw,40px);margin:0}
 .band h1 .cash{display:inline-block;padding:0 .22em}
 .side{display:flex;flex-wrap:wrap;align-items:center;gap:8px 22px;max-width:100%}
+@media(min-width:1100px){.side{flex-direction:column;align-items:flex-start;gap:8px}}
 .next{margin:0;font-size:15px}
 .next a{font-weight:700}
 .bounty h1{font-size:clamp(30px,4.2vw,44px)}
@@ -64,7 +65,7 @@ button:hover,.more:hover,button[aria-pressed=true]{background:var(--ink);color:v
 .cols{padding:7px 0;border-top:3px solid var(--ink);border-bottom:1px solid var(--ink);background:var(--card);font-size:11px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--mute)}
 .cols span:nth-child(n+2){text-align:left}
 .cols span:first-child{padding-left:4px}
-.row{position:relative;padding:9px 0;border-bottom:1px solid var(--line)}
+.row{position:relative;padding:6px 0;border-bottom:1px solid var(--line)}
 .row:hover{background:var(--card)}
 .row h2{display:flex;align-items:center;gap:9px;margin:0;padding:0;border:0;font-size:19px;line-height:1.2;letter-spacing:-.015em}
 .row .title{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-decoration:none}
@@ -181,7 +182,7 @@ button:disabled{opacity:.35;cursor:default;background:var(--card);color:var(--in
 .duo .leaderboard>:is(.crumbs,h1,.lead,.figures){display:none}
 .duo .leaderboard>.kicker{margin:0;padding-top:9px;border-top:3px solid var(--ink);font-size:21px;font-weight:900;letter-spacing:-.02em;text-transform:none;color:var(--ink)}
 .duo input[type=search]{margin:6px 0 0;max-width:none;padding:4px 10px}
-.duo .standings li{padding:5px 0}
+.duo .standings li{padding:5px 0;grid-template-columns:42px 28px minmax(0,1.25fr) minmax(0,1fr) minmax(74px,auto) minmax(78px,auto)}
 
 @media (max-width:900px){
 .cols{display:none}

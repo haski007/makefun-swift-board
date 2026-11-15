@@ -26,7 +26,7 @@ export function build({ slug }) {
   refs.rulesBox = h('details', h('summary', 'Read the full rules'), refs.rules);
   // The rules can run to tens of kilobytes: they become DOM only when the reader opens them.
   refs.rulesBox.addEventListener('toggle', () => {
-    if (refs.rulesBox.open && refs.rules.shown !== refs.rules.source) refs.rules.replaceChildren(parts.prose((refs.rules.shown = refs.rules.source)));
+    if (refs.rulesBox.open && refs.rules.shown !== refs.rules.source) refs.rules.replaceChildren(rewardTable.prose((refs.rules.shown = refs.rules.source)));
   });
   const page = h(
     'section.bounty',
@@ -67,11 +67,11 @@ export function patch({ refs }, params, bounty, live) {
   setText(refs.title, bounty.title);
   setText(refs.summary, bounty.summary || '');
   refs.figures.patch(bounty);
-  parts.rewards(refs, bounty);
-  parts.dates(refs.dates, bounty, live);
+  rewardTable.rewards(refs, bounty);
+  rewardTable.dates(refs.dates, bounty, live);
   setText(refs.scoring, bounty.resolution?.summary || '');
   setText(refs.metric, bounty.resolution?.metric ? `Ranked by ${bounty.resolution.metric.name}, ${bounty.resolution.metric.better} is better.` : '');
-  if (refs.description.source !== bounty.description) refs.description.replaceChildren(parts.prose((refs.description.source = bounty.description) || ''));
+  if (refs.description.source !== bounty.description) refs.description.replaceChildren(rewardTable.prose((refs.description.source = bounty.description) || ''));
   refs.rules.source = bounty.rules || '';
   refs.rulesBox.hidden = !bounty.rules;
 
@@ -90,7 +90,7 @@ export function patch({ refs }, params, bounty, live) {
 }
 
 // The small pieces of the page: the rewards and dates patches, the tiers, a reward line, a date line and the API's markdown.
-const parts = {
+const rewardTable = {
   rewards(refs, bounty) {
     const fees = Number(bounty.entryFeesUsd) || 0;
     const places = bounty.rewardsNow?.length
@@ -102,7 +102,7 @@ const parts = {
         ? `Shared by the top ${places.length}: ${usd(bounty.rewardAmount)} reward + ${usd(fees)} from ${count(bounty.entryFeePayers)} entry fees.`
         : `Shared by the top ${places.length}: the reward alone, no entry fee adds to it.`,
     );
-    patchList(refs.rewards, parts.tiers(places), (tier) => tier.place, parts.rewardCell);
+    patchList(refs.rewards, rewardTable.tiers(places), (tier) => tier.place, rewardTable.rewardCell);
   },
   dates(list, bounty, live) {
     const phases = (bounty.phases || []).map((phase) => [`Phase: ${phase.title}`, `${day(phase.startsAt)} to ${day(phase.endsAt)}`]);
@@ -114,7 +114,7 @@ const parts = {
       bounty.resolvedAt && ['Resolved', day(bounty.resolvedAt)],
       bounty.resolution?.announce && ['Results', bounty.resolution.announce],
     ].filter(Boolean);
-    patchList(list, rows, (row) => row[0], parts.dateRow);
+    patchList(list, rows, (row) => row[0], rewardTable.dateRow);
   },
   // The places that pay the same are one line of the rewards table: 1st, 2nd, 3rd, 4th to 10th, 11th to 20th.
   tiers(places) {
@@ -154,7 +154,7 @@ const parts = {
     let list = null;
     let para = [];
     const flush = () => {
-      if (para.length) out.append(h('p', parts.inline(para.join(' '))));
+      if (para.length) out.append(h('p', rewardTable.inline(para.join(' '))));
       para = [];
     };
     for (const line of text.split('\n')) {
@@ -163,11 +163,11 @@ const parts = {
       if (!item) list = null;
       if (heading) {
         flush();
-        out.append(h('h3', parts.inline(heading[1])));
+        out.append(h('h3', rewardTable.inline(heading[1])));
       } else if (item) {
         flush();
         if (!list) out.append((list = h('ul')));
-        list.append(h('li', parts.inline(item[1])));
+        list.append(h('li', rewardTable.inline(item[1])));
       } else if (line.trim()) para.push(line.trim());
       else flush();
     }

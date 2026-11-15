@@ -10,7 +10,7 @@ export function build(params) {
   return page;
 }
 
-export function patch(page, params, board, summary) {
-  bounty.patch(page.refs.left, params, summary, null);
-  leaderboard.patch(page.refs.right, params, board, summary);
+export function patch(page, params, board, info) {
+  bounty.patch(page.refs.left, params, info, null);
+  leaderboard.patch(page.refs.right, params, board, info);
 }

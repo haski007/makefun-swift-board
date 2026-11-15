@@ -139,9 +139,9 @@ export function facts(bounty) {
   return {
     at,
     pot: usd(bounty.potUsd ?? bounty.rewardAmount),
-    potNote: fees ? `${usd(bounty.rewardAmount)} + ${usd(fees)} fees` : 'reward',
+    potNote: fees ? `${usd(bounty.rewardAmount)} + ${usd(fees)} fees` : '',
     fee: paid ? usd(paid) : 'Free',
-    feeNote: paid ? `${count(bounty.entryFeePayers)} paid` : 'no fee',
+    feeNote: paid ? `${count(bounty.entryFeePayers)} paid` : '',
     until: at === 'live' ? bounty.deadline : at === 'soon' ? bounty.opensAt || bounty.publishedAt : null,
     left: at === 'done' ? 'Finished' : 'Closed',
     leftNote: at === 'soon' ? 'until it opens' : `${at === 'live' ? 'ends' : 'ended'} ${day(bounty.deadline)}`,
